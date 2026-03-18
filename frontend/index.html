@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AM Discovery — New Releases</title>
+  <meta name="description" content="Discover and track new Apple Music releases across HK, JP, MY, and TW storefronts." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="app-logo">
+        <span class="logo-icon">♫</span>
+        <span class="logo-text">AM Discovery</span>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li><a href="#/" class="nav-link" id="nav-releases" data-page="releases">
+        <span class="nav-icon">🎵</span> New Releases
+      </a></li>
+      <li><a href="#/all" class="nav-link" id="nav-all" data-page="all">
+        <span class="nav-icon">📀</span> All Albums
+      </a></li>
+      <li><a href="#/watchlist" class="nav-link" id="nav-watchlist" data-page="watchlist">
+        <span class="nav-icon">⭐</span> Watchlist
+      </a></li>
+      <li><a href="#/settings" class="nav-link" id="nav-settings" data-page="settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="status-card" id="status-card">
+        <div class="status-dot" id="status-dot"></div>
+        <div class="status-info">
+          <div class="status-label">Last updated</div>
+          <div class="status-value" id="status-last-run">—</div>
+        </div>
+      </div>
+      <button class="btn-refresh" id="btn-refresh" title="Refresh now">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main-content" id="main-content">
+    <!-- Pages injected by JS -->
+  </main>
+
+  <!-- Album detail modal -->
+  <div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

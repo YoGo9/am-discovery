@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "am-discovery"
+version = "0.1.0"
+description = "Apple Music new-release scraper and aggregator"
+requires-python = ">=3.11"
+dependencies = [
+    "flasgger>=0.9.7.1",
+    "flask>=3",
+]
+
+[project.scripts]
+am-discovery = "main:main"
+am-server = "server:main"
+
+[tool.hatch.build.targets.wheel]
+include = ["client.py", "main.py"]
+
+[dependency-groups]
+dev = ["pytest>=9"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
