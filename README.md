@@ -26,6 +26,16 @@ AM Discovery monitors Apple Music regional new-release pages to surface new rele
 
 ---
 
+## Screenshots
+<img width="1265" height="1240" alt="1 newrelease" src="https://github.com/user-attachments/assets/2a08eb5f-a3de-4609-af7c-068627f17ffd" />
+<img width="1265" height="1240" alt="2 allalbums" src="https://github.com/user-attachments/assets/00772c38-a66e-4d86-816b-172097a5828e" />
+<img width="1265" height="1240" alt="3 artistwatchlist" src="https://github.com/user-attachments/assets/d0807709-f846-4c35-a354-247ba4108bad" />
+<img width="1265" height="1240" alt="4 mbadmin" src="https://github.com/user-attachments/assets/43ecd7c1-cdc5-41b9-8adf-e6fe38e69177" />
+<img width="1271" height="1230" alt="Screenshot_20260812_193248" src="https://github.com/user-attachments/assets/de79fa57-743d-4564-a048-9e633290798b" />
+<img width="1271" height="1230" alt="Screenshot_20260812_193317" src="https://github.com/user-attachments/assets/4439e9c7-4345-4a6c-8917-e88556f1e688" />
+
+
+---
 ## Requirements
 
 - Python 3.11+
