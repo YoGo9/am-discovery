@@ -42,6 +42,14 @@ const el = (tag, cls, text) => {
   return e;
 };
 
+// True when a click carries a modifier (or is a middle-click) that means the
+// browser should handle the link itself — ⌘/Ctrl-click opens a background tab,
+// Shift-click a new window, Alt-click downloads. In-app routers must not
+// preventDefault() on these or the "open in new tab" gesture silently breaks.
+function isModifiedClick(e) {
+  return !!(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button != null && e.button !== 0));
+}
+
 // Sanitize HTML from Apple Music bios — allow only safe inline formatting tags.
 const SAFE_BIO_TAGS = new Set(["BR", "B", "I", "EM", "STRONG"]);
 function sanitizeHtml(html) {

@@ -178,6 +178,12 @@ async function renderNewReleases(main, page = 1, query = "", storefront = "", wa
 // ---------------------------------------------------------------------------
 async function renderAllReleases(main, page = 1, query = "", storefront = "", watchedOnly = false, typeFilter = "", sort = state.currentSort) {
   state.currentSort = sort;
+  // Remember where the user is so route() can put them back here (see app.js)
+  state.allReleasesPage = page;
+  state.allReleasesQuery = query;
+  state.allReleasesStorefront = storefront;
+  state.allReleasesWatchedOnly = watchedOnly;
+  state.allReleasesTypeFilter = typeFilter;
   main.innerHTML = "";
   const wrap = el("div", "page-enter");
   wrap.appendChild(buildHeader("📀 All Albums", "Every album in your local database"));

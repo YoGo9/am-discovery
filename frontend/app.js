@@ -7,9 +7,30 @@
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
+// The paginated list pages remember where you were. Leaving one (to an artist
+// page, say) stashes its scroll offset; coming back re-renders the same page
+// number and filters and scrolls you back down to the tile you clicked.
+const SCROLL_MEMORY_ROUTES = new Set(["#/", "#/all"]);
+let _activeRoute = null;
+
+// Scrolls back to the offset remembered for `hash` once `rendered` settles.
+function restoreScroll(hash, rendered) {
+  const y = state.scrollMemory[hash] || 0;
+  const go = () => { window.scrollTo({ top: y, behavior: "auto" }); };
+  Promise.resolve(rendered).then(go, go);
+}
+
 function route(hash) {
   hash = hash || "#/";
   const main = $("main-content");
+
+  // Stash the outgoing page's offset before the render blows the DOM away.
+  // Also covers re-rendering the current page in place (e.g. after a watch
+  // toggle), which would otherwise restore a stale offset.
+  if (_activeRoute && SCROLL_MEMORY_ROUTES.has(_activeRoute)) {
+    state.scrollMemory[_activeRoute] = window.scrollY;
+  }
+  _activeRoute = hash;
 
   // Highlight nav
   document.querySelectorAll(".nav-link").forEach(a => {
@@ -25,7 +46,14 @@ function route(hash) {
 
   if (hash === "#/all") {
     document.title = "All Albums — AM Discovery";
-    renderAllReleases(main, 1, "", "", false, state.allReleasesTypeFilter);
+    restoreScroll(hash, renderAllReleases(
+      main,
+      state.allReleasesPage,
+      state.allReleasesQuery,
+      state.allReleasesStorefront,
+      state.allReleasesWatchedOnly,
+      state.allReleasesTypeFilter,
+    ));
   } else if (hash === "#/watchlist") {
     document.title = "Artist Watchlist — AM Discovery";
     const sortFilter = WatchlistPrefs.getSortFilter();
@@ -43,7 +71,13 @@ function route(hash) {
     renderArtist(main, artistId);
   } else {
     document.title = "New Releases — AM Discovery";
-    renderNewReleases(main);
+    restoreScroll(hash, renderNewReleases(
+      main,
+      state.currentPage,
+      state.currentQuery,
+      state.currentStorefront,
+      state.currentWatchedOnly,
+    ));
   }
 }
 
@@ -70,9 +104,18 @@ async function applyMbScanFeatureFlag() {
 document.addEventListener("DOMContentLoaded", async () => {
   // Routing
   window.addEventListener("hashchange", () => route(location.hash));
-  // Re-route on nav click even when hash hasn't changed (e.g. clicking "New Releases" while already on that page)
+  // Re-route on nav click when the hash isn't changing (e.g. clicking "New
+  // Releases" while already on that page) — otherwise hashchange does it, and
+  // routing here too would double-render and clobber the stashed scroll offset.
+  // Modified clicks are left alone so ⌘/Ctrl-click still opens a new tab.
   document.querySelectorAll(".nav-link").forEach(a => {
-    a.addEventListener("click", () => route(a.getAttribute("href")));
+    a.addEventListener("click", e => {
+      if (isModifiedClick(e)) return;
+      const href = a.getAttribute("href");
+      if ((location.hash || "#/") !== href) return;
+      e.preventDefault();
+      route(href);
+    });
   });
 
   // Refresh button

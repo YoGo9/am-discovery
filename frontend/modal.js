@@ -118,8 +118,7 @@ async function openModal(storeAdamId) {
   if (album.artist_id) {
     const headerActions = el("div", "modal-header-actions");
 
-    const artBtn = el("button", "btn-header-action", "View Artist →");
-    artBtn.addEventListener("click", () => { closeModal(); location.hash = `#/artist/${album.artist_id}`; });
+    const artBtn = routeLink(`#/artist/${album.artist_id}`, "btn-header-action", "View Artist →", closeModal);
     headerActions.appendChild(artBtn);
 
     if (album.artist) {
