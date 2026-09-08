@@ -717,3 +717,124 @@ describe("artistCard", () => {
     expect(hint.is_group).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// routeLink — ⌘/Ctrl-click must open a new tab
+// ---------------------------------------------------------------------------
+// Artist names used to be <span>s with a click handler, so the browser had no
+// link to open and ⌘-click silently did nothing (or popped the album modal).
+// ---------------------------------------------------------------------------
+
+describe("routeLink — new-tab gestures", () => {
+  const routeLink = (...args) => ctx.appWindow.routeLink(...args);
+
+  const clickWith = (node, init) => {
+    const ev = new ctx.appWindow.MouseEvent("click", { bubbles: true, cancelable: true, ...init });
+    node.dispatchEvent(ev);
+    return ev;
+  };
+
+  test("renders a real anchor pointing at the in-app hash route", () => {
+    const a = routeLink("#/artist/A1", "artist-link", "Artist A");
+    expect(a.tagName).toBe("A");
+    expect(a.getAttribute("href")).toBe("#/artist/A1");
+    expect(a.textContent).toBe("Artist A");
+    expect(a.className).toBe("artist-link");
+  });
+
+  test("plain click is handled in-app: default prevented, onNav run, hash set", () => {
+    let navs = 0;
+    const a = routeLink("#/artist/A1", "artist-link", "Artist A", () => { navs++; });
+    ctx.appWindow.location.hash = "#/all";
+    const ev = clickWith(a, {});
+    expect(ev.defaultPrevented).toBe(true);
+    expect(navs).toBe(1);
+    expect(ctx.appWindow.location.hash).toBe("#/artist/A1");
+  });
+
+  test.each([
+    ["meta (⌘)", { metaKey: true }],
+    ["ctrl", { ctrlKey: true }],
+    ["shift", { shiftKey: true }],
+    ["middle-click", { button: 1 }],
+  ])("%s click is left to the browser — default not prevented, no in-app nav", (_label, init) => {
+    let navs = 0;
+    const a = routeLink("#/artist/A1", "artist-link", "Artist A", () => { navs++; });
+    const ev = clickWith(a, init);
+    expect(ev.defaultPrevented).toBe(false);
+    expect(navs).toBe(0);
+  });
+
+  test("clicks never reach the enclosing card, modified or not", () => {
+    let cardClicks = 0;
+    const card = ctx.appWindow.document.createElement("div");
+    card.addEventListener("click", () => { cardClicks++; });
+    const a = routeLink("#/artist/A1", "artist-link", "Artist A");
+    card.appendChild(a);
+    ctx.appWindow.document.body.appendChild(card);
+
+    clickWith(a, {});
+    clickWith(a, { metaKey: true });
+    expect(cardClicks).toBe(0);
+
+    card.remove();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Artist names are anchors everywhere they navigate
+// ---------------------------------------------------------------------------
+
+describe("artist names are openable in a new tab", () => {
+  test("single-artist album card links the artist name", () => {
+    const card = ctx.appWindow.__test_albumCard({
+      store_adam_id: "1", title: "Album", artist: "Solo", artist_id: "A1", artists_json: null,
+    });
+    const name = card.querySelector(".album-artist");
+    expect(name.tagName).toBe("A");
+    expect(name.getAttribute("href")).toBe("#/artist/A1");
+  });
+
+  test("album card with no artist_id stays plain text", () => {
+    const card = ctx.appWindow.__test_albumCard({
+      store_adam_id: "1", title: "Album", artist: "Nobody", artist_id: null, artists_json: null,
+    });
+    const name = card.querySelector(".album-artist");
+    expect(name.tagName).toBe("SPAN");
+  });
+
+  test("each name in a multi-artist album card is its own anchor", () => {
+    const card = ctx.appWindow.__test_albumCard({
+      store_adam_id: "1",
+      title: "Album",
+      artist: "A & B",
+      artist_id: "A1",
+      artists_json: [{ id: "A1", name: "A" }, { id: "A2", name: "B" }],
+    });
+    const links = card.querySelectorAll(".album-artist .artist-link");
+    expect(Array.from(links).map(a => a.tagName)).toEqual(["A", "A"]);
+    expect(Array.from(links).map(a => a.getAttribute("href"))).toEqual(["#/artist/A1", "#/artist/A2"]);
+  });
+
+  test("a listed artist without an id is not linked", () => {
+    const wrap = ctx.appWindow.makeArtistLinks(
+      { artist: "A & ?", artists_json: [{ id: "A1", name: "A" }, { id: null, name: "?" }] },
+      "album-artist",
+    );
+    const parts = wrap.querySelectorAll(".artist-link");
+    expect(parts[0].tagName).toBe("A");
+    expect(parts[1].tagName).toBe("SPAN");
+  });
+
+  test("artistCard is an anchor to the artist page", () => {
+    const card = ctx.appWindow.__test_artistCard({ id: "ART9", name: "Nav" });
+    expect(card.tagName).toBe("A");
+    expect(card.getAttribute("href")).toBe("#/artist/ART9");
+  });
+
+  test("artistCard without an id renders a non-navigating card", () => {
+    const card = ctx.appWindow.__test_artistCard({ name: "Unknown" });
+    expect(card.tagName).toBe("DIV");
+    expect(card.querySelector(".artist-card-name").textContent).toBe("Unknown");
+  });
+});

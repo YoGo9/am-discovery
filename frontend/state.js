@@ -23,7 +23,14 @@ const state = {
   artistViewMode: "chrono",   // "chrono" | "grouped"
   artistTypeFilter: "",       // "" = all, else a release_type value
   artistSeedFilter: false,    // true = only releases that need MusicBrainz seeding
+  // All Albums page — remembered so returning from an artist page (or the nav
+  // link) lands back on the page/filters you were browsing, not on page 1.
+  allReleasesPage: 1,
+  allReleasesQuery: "",
+  allReleasesStorefront: "",
+  allReleasesWatchedOnly: false,
   allReleasesTypeFilter: "",  // "" = all, else a release_type value
+  scrollMemory: {},           // hash -> scroll offset, for the paginated list routes
   currentSort: ReleasesPrefs.getSort(),  // "release_date" | "first_seen"
   cliSchedulerEnabled: false, // true when cli_scheduler_url is configured
   watchlistPage: 0,           // remembered page index for watchlist (0-based)

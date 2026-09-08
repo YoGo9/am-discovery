@@ -909,7 +909,7 @@ a.sf-chip:hover { opacity: 0.75; }
   pointer-events: auto;
 }
 
-.artist-card { cursor: pointer; text-align: center; padding: 6px; border-radius: var(--radius-sm); transition: background var(--transition); }
+.artist-card { cursor: pointer; text-align: center; padding: 6px; border-radius: var(--radius-sm); transition: background var(--transition); display: block; color: inherit; text-decoration: none; }
 .artist-card:hover { background: rgba(255,255,255,0.05); }
 .artist-card .album-artwork,
 .artist-card .album-artwork-placeholder {
@@ -1292,6 +1292,7 @@ a.sf-chip:hover { opacity: 0.75; }
   margin-bottom: 16px;
   cursor: pointer;
   display: inline-block;
+  text-decoration: none;
 }
 .modal-artist:hover { text-decoration: underline; }
 .modal-artist.multi { color: var(--text-dim); cursor: default; font-weight: normal; }
@@ -1301,6 +1302,7 @@ a.sf-chip:hover { opacity: 0.75; }
   color: var(--accent);
   font-weight: 500;
   cursor: pointer;
+  text-decoration: none;
 }
 .artist-link:hover { text-decoration: underline; }
 .modal-tags {
@@ -2099,6 +2101,7 @@ a.sf-chip:hover { opacity: 0.75; }
   font-weight: 500;
   color: var(--accent);
   cursor: pointer;
+  text-decoration: none;
   display: block;
   white-space: nowrap;
   overflow: hidden;

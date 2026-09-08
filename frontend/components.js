@@ -172,39 +172,60 @@ function buildPagination(current, total, onPage) {
 }
 
 // ---------------------------------------------------------------------------
+// Internal hash-route link
+// ---------------------------------------------------------------------------
+// A real <a href="#/..."> so the browser's own gestures work — ⌘/Ctrl-click
+// opens a background tab, middle-click too, Shift-click a new window, and the
+// context menu offers "Open link in new tab". A plain left-click is handled
+// in-app instead so `onNav` (artist hint, closing a modal) still runs first.
+//
+// Clicks are always stopped from bubbling: these links usually sit inside a
+// clickable card, and a ⌘-click that also popped the album modal would be
+// worse than no new tab at all.
+function routeLink(hash, cls, text, onNav) {
+  const a = el("a", cls, text);
+  a.href = hash;
+  const stop = e => e.stopPropagation();
+  a.addEventListener("mousedown", stop);
+  a.addEventListener("auxclick", stop);
+  a.addEventListener("click", e => {
+    e.stopPropagation();
+    if (isModifiedClick(e)) return;  // leave new-tab/window/download to the browser
+    e.preventDefault();
+    if (onNav) onNav();
+    location.hash = hash;
+  });
+  return a;
+}
+
+// ---------------------------------------------------------------------------
 // Artist links helper — renders multiple linked artist names or falls back
 // to a single artist name/link when artists_json is not available.
 // ---------------------------------------------------------------------------
 function makeArtistLinks(album, cls, onNav) {
-  const wrap = el("span", cls);
   const artists = album.artists_json;
   if (Array.isArray(artists) && artists.length) {
+    const wrap = el("span", cls);
     wrap.classList.add("multi");
     artists.forEach((a, i) => {
       if (i > 0) wrap.appendChild(document.createTextNode(", "));
-      const span = el("span", "artist-link", a.name || "—");
       if (a.id) {
-        span.addEventListener("click", e => {
-          e.stopPropagation();
+        wrap.appendChild(routeLink(`#/artist/${a.id}`, "artist-link", a.name || "—", () => {
           state.artistHint = { id: String(a.id), name: a.name, url: a.url, artwork_url: a.artwork_url, genre: a.genre };
           if (onNav) onNav();
-          location.hash = `#/artist/${a.id}`;
-        });
+        }));
+      } else {
+        wrap.appendChild(el("span", "artist-link", a.name || "—"));
       }
-      wrap.appendChild(span);
     });
     wrap.title = album.artist || "";
-  } else {
-    wrap.textContent = album.artist || "—";
-    wrap.title = album.artist || "";
-    if (album.artist_id) {
-      wrap.addEventListener("click", e => {
-        e.stopPropagation();
-        if (onNav) onNav();
-        location.hash = `#/artist/${album.artist_id}`;
-      });
-    }
+    return wrap;
   }
+
+  const wrap = album.artist_id
+    ? routeLink(`#/artist/${album.artist_id}`, cls, album.artist || "—", onNav)
+    : el("span", cls, album.artist || "—");
+  wrap.title = album.artist || "";
   return wrap;
 }
 
@@ -279,7 +300,21 @@ function albumCard(album) {
 // Artist card (circular artwork, navigates to in-app artist page)
 // ---------------------------------------------------------------------------
 function artistCard(artist) {
-  const card = el("div", "artist-card");
+  const card = artist.id
+    ? routeLink(`#/artist/${artist.id}`, "artist-card", null, () => {
+        state.artistHint = {
+          id: String(artist.id),
+          name: artist.name,
+          url: artist.url,
+          artwork_url: artist.artwork_url,
+          genre: artist.genre,
+          born_or_formed: artist.born_or_formed,
+          origin: artist.origin,
+          artist_bio: artist.artist_bio,
+          is_group: artist.is_group,
+        };
+      })
+    : el("div", "artist-card");
   if (artist.id) card.dataset.id = artist.id;
 
   card.appendChild(artworkEl(artist.artwork_url, "album-artwork"));
@@ -291,22 +326,6 @@ function artistCard(artist) {
   if (artist.genre) {
     card.appendChild(el("div", "artist-card-genre", artist.genre));
   }
-
-  card.addEventListener("click", () => {
-    if (!artist.id) return;
-    state.artistHint = {
-      id: String(artist.id),
-      name: artist.name,
-      url: artist.url,
-      artwork_url: artist.artwork_url,
-      genre: artist.genre,
-      born_or_formed: artist.born_or_formed,
-      origin: artist.origin,
-      artist_bio: artist.artist_bio,
-      is_group: artist.is_group,
-    };
-    location.hash = `#/artist/${artist.id}`;
-  });
 
   return card;
 }

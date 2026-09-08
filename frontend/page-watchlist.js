@@ -139,13 +139,8 @@ async function renderWatchlist(main, preferredSourceFilter = "", collectionStatu
     card.appendChild(avatar);
 
     const info = el("div", "watchlist-info");
-    const name = el("a", "watchlist-name", artist.name);
+    const name = routeLink(`#/artist/${artist.artist_id}`, "watchlist-name", artist.name);
     name.title = artist.name;
-    name.href = `#/artist/${artist.artist_id}`;
-    name.addEventListener("click", e => {
-      e.preventDefault();
-      location.hash = `#/artist/${artist.artist_id}`;
-    });
     info.appendChild(name);
 
     if (artist.alt_name) {
@@ -218,14 +213,10 @@ async function renderWatchlist(main, preferredSourceFilter = "", collectionStatu
     card.appendChild(avatar);
 
     const info = el("div", "watchlist-info");
-    const name = el("a", "watchlist-name", artist.name);
-    name.title = artist.name;
-    name.href = `#/artist/${artist.id}`;
-    name.addEventListener("click", e => {
-      e.preventDefault();
+    const name = routeLink(`#/artist/${artist.id}`, "watchlist-name", artist.name, () => {
       state.artistHint = { id: String(artist.id), name: artist.name, url: artist.url, artwork_url: artist.artwork_url, genre: artist.genre, born_or_formed: artist.born_or_formed, origin: artist.origin, artist_bio: artist.artist_bio, is_group: artist.is_group };
-      location.hash = `#/artist/${artist.id}`;
     });
+    name.title = artist.name;
     info.appendChild(name);
     const sub = el("div", "watchlist-date", "Apple Music");
     info.appendChild(sub);

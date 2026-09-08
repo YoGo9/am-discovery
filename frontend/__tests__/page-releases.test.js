@@ -335,3 +335,112 @@ describe("renderAllReleases — sort buttons", () => {
     expect(releaseCall).toContain("sort=first_seen");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Browsing position survives a trip to an artist page
+// ---------------------------------------------------------------------------
+// Regression: route() rendered "#/all" with hardcoded page 1, so clicking an
+// artist from page 15 and coming back dropped you at the top of page 1.
+// ---------------------------------------------------------------------------
+
+describe("list pages remember where you were", () => {
+  const main = () => ctx.appWindow.document.getElementById("main-content");
+  const state = () => ctx.appWindow.__test_state;
+
+  const releaseUrls = () =>
+    ctx.appWindow.fetch.mock.calls.map(c => c[0]).filter(u => u.includes("/api/releases?"));
+
+  beforeEach(() => {
+    ctx.appWindow.fetch.mockImplementation((url) => {
+      if (url.includes("/api/system/config")) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ check_storefronts: ["jp", "tw"] }) });
+      }
+      if (url.includes("/api/watchlist")) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ items: [], total: 0 }) });
+    });
+  });
+
+  test("renderAllReleases records the page and filters it rendered", async () => {
+    await ctx.appWindow.__test_renderAllReleases(main(), 15, "kiss", "jp", true, "main-albums");
+    expect(state().allReleasesPage).toBe(15);
+    expect(state().allReleasesQuery).toBe("kiss");
+    expect(state().allReleasesStorefront).toBe("jp");
+    expect(state().allReleasesWatchedOnly).toBe(true);
+    expect(state().allReleasesTypeFilter).toBe("main-albums");
+  });
+
+  test("route(#/all) resumes the remembered page and filters", async () => {
+    await ctx.appWindow.__test_renderAllReleases(main(), 15, "", "jp", false, "main-albums");
+
+    // Off to an artist page, then back — the way a user gets here.
+    ctx.appWindow.route("#/artist/A1");
+    await new Promise(r => setTimeout(r, 20));
+
+    ctx.appWindow.fetch.mockClear();
+    ctx.appWindow.route("#/all");
+    await new Promise(r => setTimeout(r, 50));
+
+    const url = releaseUrls()[0];
+    expect(url).toContain("page=15");
+    expect(url).toContain("storefront=jp");
+    expect(url).toContain("release_type=main-albums");
+  });
+
+  test("route(#/) resumes the remembered New Releases page and filters", async () => {
+    await ctx.appWindow.__test_renderNewReleases(main(), 7, "wave", "tw", false);
+
+    ctx.appWindow.route("#/artist/A1");
+    await new Promise(r => setTimeout(r, 20));
+
+    ctx.appWindow.fetch.mockClear();
+    ctx.appWindow.route("#/");
+    await new Promise(r => setTimeout(r, 50));
+
+    const url = releaseUrls()[0];
+    expect(url).toContain("page=7");
+    expect(url).toContain("q=wave");
+    expect(url).toContain("storefront=tw");
+  });
+
+  test("a new search resets to page 1", async () => {
+    await ctx.appWindow.__test_renderAllReleases(main(), 15, "", "", false, "");
+    expect(state().allReleasesPage).toBe(15);
+
+    const input = main().querySelector(".search-input");
+    input.value = "abba";
+    input.dispatchEvent(new ctx.appWindow.Event("input"));
+    await new Promise(r => setTimeout(r, 500));
+
+    expect(state().allReleasesPage).toBe(1);
+    expect(state().allReleasesQuery).toBe("abba");
+  });
+
+  test("returning to #/all scrolls back to where you left off", async () => {
+    await ctx.appWindow.__test_renderAllReleases(main(), 15, "", "", false, "");
+
+    ctx.appWindow.route("#/artist/A1");
+    await new Promise(r => setTimeout(r, 20));
+
+    state().scrollMemory["#/all"] = 1840;
+    ctx.appWindow.scrollTo.mockClear();
+    ctx.appWindow.route("#/all");
+    await new Promise(r => setTimeout(r, 50));
+
+    expect(ctx.appWindow.scrollTo).toHaveBeenCalledWith({ top: 1840, behavior: "auto" });
+  });
+
+  test("leaving #/all stashes its scroll offset", async () => {
+    state().scrollMemory = {};
+    ctx.appWindow.route("#/all");
+    await new Promise(r => setTimeout(r, 50));
+
+    Object.defineProperty(ctx.appWindow, "scrollY", { value: 920, configurable: true });
+    ctx.appWindow.route("#/artist/A1");
+    await new Promise(r => setTimeout(r, 20));
+    Object.defineProperty(ctx.appWindow, "scrollY", { value: 0, configurable: true });
+
+    expect(state().scrollMemory["#/all"]).toBe(920);
+  });
+});
