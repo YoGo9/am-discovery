@@ -100,11 +100,6 @@ function buildHarmonyUrl(storeAdamId, storefront, upc, regions) {
   params.set("gtin", upc || "");
   params.set("region", (regions || []).map(s => s.toUpperCase()).join(","));
   params.set("category", "preferred");
-  params.set("musicbrainz", "");
-  params.set("deezer", "");
-  params.set("itunes", "");
-  params.set("spotify", "");
-  params.set("tidal", "");
   return `https://harmony.pulsewidth.org.uk/release?${params.toString()}`;
 }
 
