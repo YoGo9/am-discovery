@@ -241,6 +241,7 @@ async function openModal(storeAdamId) {
     params.set("gtin", harmonyUpc || "");
     const regions = (state.configuredStorefronts || []).map(s => s.toUpperCase()).join(",");
     params.set("region", regions);
+    params.set("category", "preferred");
     params.set("musicbrainz", "");
     params.set("deezer", "");
     params.set("itunes", "");
