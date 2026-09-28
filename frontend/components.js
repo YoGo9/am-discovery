@@ -99,6 +99,7 @@ function buildHarmonyUrl(storeAdamId, storefront, upc, regions) {
   const params = new URLSearchParams({ url: amUrl });
   params.set("gtin", upc || "");
   params.set("region", (regions || []).map(s => s.toUpperCase()).join(","));
+  params.set("category", "preferred");
   params.set("musicbrainz", "");
   params.set("deezer", "");
   params.set("itunes", "");
