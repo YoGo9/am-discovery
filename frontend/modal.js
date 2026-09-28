@@ -242,11 +242,6 @@ async function openModal(storeAdamId) {
     const regions = (state.configuredStorefronts || []).map(s => s.toUpperCase()).join(",");
     params.set("region", regions);
     params.set("category", "preferred");
-    params.set("musicbrainz", "");
-    params.set("deezer", "");
-    params.set("itunes", "");
-    params.set("spotify", "");
-    params.set("tidal", "");
     btn.href = `https://harmony.pulsewidth.org.uk/release?${params.toString()}`;
     btn.target = "_blank";
     btn.rel = "noopener";
